@@ -3,6 +3,7 @@ package controllers
 import (
 	"gin-boilerplate/dao/devicedao"
 	"gin-boilerplate/infra/database"
+	"gin-boilerplate/middleware"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,29 @@ func GetDevice(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, device)
+}
+
+func GetUserDevices(c *gin.Context) {
+	claims, ok := c.Get("claims")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, "User not found in request context")
+		return
+	}
+	user, ok := claims.(middleware.JWTClaim)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, "Failed to parse user data")
+		return
+	}
+	devices, err := devicedao.GetAll(devicedao.DeviceDAO{Owner: user.ID}, database.GetDB())
+	if err == gorm.ErrRecordNotFound {
+		c.JSON(http.StatusNoContent, nil)
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, devices)
 }
 
 type priceData struct {

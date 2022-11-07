@@ -6,6 +6,7 @@ import (
 
 type DeviceDAO struct {
 	ID         null.String `gorm:"column:id" json:"id"`
+	Owner      null.Int    `gorm:"column:owner" json:"owner"`
 	Type       null.String `gorm:"column:type" json:"type"`
 	PriceLimit null.Float  `gorm:"column:priceLimit" json:"priceLimit"`
 	BaseURL    null.String `gorm:"column:baseURL" json:"baseURL"`
