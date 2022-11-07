@@ -26,5 +26,5 @@ func main() {
 	}
 
 	router := routers.SetupRoute()
-	logger.Fatalf("%v", router.Run(config.ServerConfig()))
+	logger.Fatalf("%v", router.RunTLS(config.ServerConfig(), "/etc/letsencrypt/live/spotit.codebite.fi/fullchain.pem", "/etc/letsencrypt/live/spotit.codebite.fi/privkey.pem"))
 }
