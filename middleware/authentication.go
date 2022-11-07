@@ -60,7 +60,6 @@ func ValidateToken(signedToken string) (claims *JWTClaim, err error) {
 			return []byte(jwtKey), nil
 		},
 	)
-	fmt.Println(token, err)
 	if err != nil {
 		return
 	}
