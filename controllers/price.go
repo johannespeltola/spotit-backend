@@ -20,25 +20,25 @@ func AddPriceRecord(c *gin.Context) {
 	var data PriceRecordData
 	err := c.BindJSON(&data)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 	turnOff, err := devicedao.GetAll(devicedao.DeviceDAO{}, helpers.LessThan("priceLimit", data.Price)(database.GetDB()))
 	if err == gorm.ErrRecordNotFound {
-		c.JSON(http.StatusNotFound, err)
+		c.JSON(http.StatusNotFound, err.Error())
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 	turnOn, err := devicedao.GetAll(devicedao.DeviceDAO{}, helpers.GreaterThan("priceLimit", data.Price)(database.GetDB()))
 	if err == gorm.ErrRecordNotFound {
-		c.JSON(http.StatusNotFound, err)
+		c.JSON(http.StatusNotFound, err.Error())
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 	var updated []string

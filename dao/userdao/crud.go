@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 func GetOne(condition UserDAO, db *gorm.DB) (*UserDAO, error) {
 	var user UserDAO
-	err := db.Where(condition).First(&user).Error
+	err := db.Debug().Where(condition).First(&user).Error
 	return &user, err
 }
 

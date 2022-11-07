@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -18,13 +19,14 @@ func Authentication() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		fmt.Println(tokenString)
 		claims, err := ValidateToken(tokenString)
 		if err != nil {
 			c.JSON(401, "Invalid access token")
 			c.Abort()
 			return
 		}
-		c.Set("claims", claims)
+		c.Set("userID", claims.ID)
 		c.Next()
 	}
 }
@@ -32,21 +34,21 @@ func Authentication() gin.HandlerFunc {
 var jwtKey = viper.GetString("SECRET")
 
 type JWTClaim struct {
-	ID       null.Int    `json:"id"`
-	Username null.String `json:"username"`
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
 	jwt.StandardClaims
 }
 
 func GenerateJWT(id null.Int, username null.String, expiration time.Time) (tokenString string, err error) {
 	claims := &JWTClaim{
-		ID:       id,
-		Username: username,
+		ID:       id.Int64,
+		Username: username.String,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expiration.Unix(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err = token.SignedString(jwtKey)
+	tokenString, err = token.SignedString([]byte(jwtKey))
 	return
 }
 
@@ -58,6 +60,7 @@ func ValidateToken(signedToken string) (claims *JWTClaim, err error) {
 			return []byte(jwtKey), nil
 		},
 	)
+	fmt.Println(token, err)
 	if err != nil {
 		return
 	}
