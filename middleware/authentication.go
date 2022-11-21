@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +18,6 @@ func Authentication() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		fmt.Println(tokenString)
 		claims, err := ValidateToken(tokenString)
 		if err != nil {
 			c.JSON(401, "Invalid access token")
