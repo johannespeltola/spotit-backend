@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"sort"
 	"spotit-backend/dao/devicedao"
@@ -94,6 +95,8 @@ func ScheduleDevice(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
+
+	data.Start = int(math.Max(float64(data.Start), float64(time.Now().Hour())))
 
 	if data.Start > data.End || (data.End-data.Start) < data.Duration {
 		c.JSON(http.StatusBadRequest, false)
