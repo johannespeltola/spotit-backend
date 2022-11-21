@@ -8,6 +8,7 @@ import (
 	"spotit-backend/dao/priceeventdao"
 	"spotit-backend/helpers"
 	"spotit-backend/infra/database"
+	"spotit-backend/services"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -69,6 +70,11 @@ func AddPriceRecord(c *gin.Context) {
 	// Update device statuses
 	var updated []string
 	for _, d := range *turnOff {
+		consumption, err := services.GetDeviceConsumption(d.BaseURL.String, d.ID.String, d.APIKey.String)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, err.Error())
+			return
+		}
 		http.PostForm(d.BaseURL.String+"/device/relay/control", url.Values{
 			"auth_key": {d.APIKey.String},
 			"id":       {d.ID.String},
@@ -76,9 +82,9 @@ func AddPriceRecord(c *gin.Context) {
 			"channel":  {"0"},
 		})
 		// Check for active off events
-		_, err := eventdao.GetOne(eventdao.EventDAO{DeviceID: d.ID}, helpers.Null("end")(database.GetDB()))
+		_, err = eventdao.GetOne(eventdao.EventDAO{DeviceID: d.ID}, helpers.Null("end")(database.GetDB()))
 		if err == gorm.ErrRecordNotFound {
-			_, err := eventdao.Create(eventdao.EventDAO{DeviceID: d.ID, Start: null.IntFrom(timeStamp)}, database.GetDB())
+			_, err := eventdao.Create(eventdao.EventDAO{DeviceID: d.ID, Start: null.IntFrom(timeStamp), Consumption: consumption}, database.GetDB())
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, err.Error())
 				return
