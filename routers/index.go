@@ -20,4 +20,5 @@ func RegisterRoutes(route *gin.Engine) {
 	route.POST("/auth/login", controllers.Login)
 	route.POST("/auth/verify", middleware.Authentication(), controllers.AutoLogin)
 	route.POST("/auth/register", controllers.Register)
+	route.POST("/device/schedule", middleware.Authentication(), controllers.ScheduleDevice)
 }

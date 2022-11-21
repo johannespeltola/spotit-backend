@@ -26,6 +26,9 @@ func main() {
 	}
 
 	router := routers.SetupRoute()
-	logger.Fatalf("%v", router.RunTLS(config.ServerConfig(), "/etc/letsencrypt/live/spotit.codebite.fi/fullchain.pem", "/etc/letsencrypt/live/spotit.codebite.fi/privkey.pem"))
-	// logger.Fatalf("%v", router.Run(config.ServerConfig()))
+	if viper.GetBool("DEBUG") {
+		logger.Fatalf("%v", router.Run(config.ServerConfig()))
+	} else {
+		logger.Fatalf("%v", router.RunTLS(config.ServerConfig(), "/etc/letsencrypt/live/spotit.codebite.fi/fullchain.pem", "/etc/letsencrypt/live/spotit.codebite.fi/privkey.pem"))
+	}
 }

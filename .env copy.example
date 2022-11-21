@@ -12,3 +12,7 @@ DB_PASSWORD=password
 DB_HOST=dbhost
 DB_PORT=3306
 DB_LOG_MODE=True
+
+# Entsoe
+ENTSOE_TOKEN=token
+ENTSOE_DOMAIN=10YFI-1--------U
