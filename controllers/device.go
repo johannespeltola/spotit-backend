@@ -80,7 +80,7 @@ func UpdateDeviceLimit(c *gin.Context) {
 }
 
 type scheduleData struct {
-	ID       null.String `json:"id"`
+	DeviceID null.String `json:"deviceID"`
 	Start    int         `json:"start"`
 	End      int         `json:"end"`
 	Duration int         `json:"duration"`
@@ -100,9 +100,16 @@ func ScheduleDevice(c *gin.Context) {
 		return
 	}
 
-	device, err := devicedao.GetOne(devicedao.DeviceDAO{ID: data.ID}, database.GetDB())
+	device, err := devicedao.GetOne(devicedao.DeviceDAO{ID: data.DeviceID}, database.GetDB())
 	if err != nil || device.Owner.Int64 != userID {
 		c.JSON(http.StatusForbidden, false)
+		return
+	}
+
+	// Clear existing existing active schedule
+	err = scheduledao.ClearDeviceSchedule(data.DeviceID.String, database.GetDB())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -126,16 +133,16 @@ func ScheduleDevice(c *gin.Context) {
 	for i := 0; i < data.Duration; i++ {
 		timeString := fmt.Sprintf("%v%v", timeStamp, keys[i])
 		timeInt, _ := strconv.ParseInt(timeString, 10, 64)
-		_, err = scheduledao.Create(scheduledao.ScheduleDAO{DeviceID: data.ID, Power: null.BoolFrom(true), Time: null.IntFrom(timeInt)}, database.GetDB())
+		_, err = scheduledao.Create(scheduledao.ScheduleDAO{DeviceID: data.DeviceID, Power: null.BoolFrom(true), Time: null.IntFrom(timeInt)}, database.GetDB())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err.Error())
 			return
 		}
 	}
-	for i := data.Duration; i < data.End-data.Start; i++ {
+	for i := data.Duration; i <= data.End-data.Start; i++ {
 		timeString := fmt.Sprintf("%v%v", timeStamp, keys[i])
 		timeInt, _ := strconv.ParseInt(timeString, 10, 64)
-		_, err = scheduledao.Create(scheduledao.ScheduleDAO{DeviceID: data.ID, Power: null.BoolFrom(false), Time: null.IntFrom(timeInt)}, database.GetDB())
+		_, err = scheduledao.Create(scheduledao.ScheduleDAO{DeviceID: data.DeviceID, Power: null.BoolFrom(false), Time: null.IntFrom(timeInt)}, database.GetDB())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err.Error())
 			return

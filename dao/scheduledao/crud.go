@@ -1,6 +1,10 @@
 package scheduledao
 
 import (
+	"fmt"
+	"time"
+
+	"gopkg.in/guregu/null.v4"
 	"gorm.io/gorm"
 )
 
@@ -24,4 +28,10 @@ func Update(event ScheduleDAO, db *gorm.DB) (*ScheduleDAO, error) {
 func Create(event ScheduleDAO, db *gorm.DB) (*ScheduleDAO, error) {
 	err := db.Create(&event).Error
 	return &event, err
+}
+
+func ClearDeviceSchedule(deviceID string, db *gorm.DB) error {
+	timeStamp := fmt.Sprintf("%v%v%v%v", time.Now().Year(), int(time.Now().Month()), time.Now().Day(), time.Now().Hour())
+	err := db.Where(ScheduleDAO{DeviceID: null.StringFrom(deviceID)}).Where("time >= ?", timeStamp).Delete(&ScheduleDAO{}).Error
+	return err
 }
