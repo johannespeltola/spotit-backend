@@ -42,3 +42,23 @@ func GetDeviceConsumption(baseURL, deviceID, apiKey string) (null.Float, error) 
 	}
 	return deviceStatus.Data.Status.Meters[0].Power, nil
 }
+
+func DeviceOff(baseURL, deviceID, apiKey string) error {
+	_, err := http.PostForm(baseURL+"/device/relay/control", url.Values{
+		"auth_key": {apiKey},
+		"id":       {deviceID},
+		"turn":     {"off"},
+		"channel":  {"0"},
+	})
+	return err
+}
+
+func DeviceOn(baseURL, deviceID, apiKey string) error {
+	_, err := http.PostForm(baseURL+"/device/relay/control", url.Values{
+		"auth_key": {apiKey},
+		"id":       {deviceID},
+		"turn":     {"on"},
+		"channel":  {"0"},
+	})
+	return err
+}

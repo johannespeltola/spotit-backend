@@ -29,3 +29,9 @@ func Null(column string) func(db *gorm.DB) *gorm.DB {
 		return db.Where(column + " IS NULL")
 	}
 }
+
+func NotIN(column string, subQuery string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Where(column+" NOT IN ?", subQuery)
+	}
+}
