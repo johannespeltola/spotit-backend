@@ -35,3 +35,9 @@ func ClearDeviceSchedule(deviceID string, db *gorm.DB) error {
 	err := db.Where(ScheduleDAO{DeviceID: null.StringFrom(deviceID)}).Where("time >= ?", timeStamp).Delete(&ScheduleDAO{}).Error
 	return err
 }
+
+func GetScheduledDevices(timeStamp int, db *gorm.DB) ([]string, error) {
+	var devices []string
+	err := db.Table("Schedules").Select("deviceID").Where("time = ?", timeStamp).Find(&devices).Error
+	return devices, err
+}

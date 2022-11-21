@@ -45,9 +45,15 @@ func AddPriceRecord(c *gin.Context) {
 		priceeventdao.Create(&priceeventdao.PriveEventDAO{Time: null.IntFrom(timeStamp), Price: null.FloatFrom(data.Price)}, database.GetDB())
 	}
 
+	scheduledDevices, err := scheduledao.GetScheduledDevices(int(timeStamp), database.GetDB())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	// Get devices to turn off
 	var turnOff []devicedao.DeviceDAO
-	off, err := devicedao.GetAll(devicedao.DeviceDAO{}, helpers.LessThan("priceLimit", data.Price)(helpers.NotIN("id", "SELECT deviceID FROM Schedules WHERE time = "+strconv.Itoa(int(timeStamp)))(database.DB)))
+	off, err := devicedao.GetAll(devicedao.DeviceDAO{}, helpers.LessThan("priceLimit", data.Price)(helpers.NotIN("id", scheduledDevices)(database.DB)))
 	if err == gorm.ErrRecordNotFound {
 		c.JSON(http.StatusNotFound, err.Error())
 		return
@@ -60,7 +66,7 @@ func AddPriceRecord(c *gin.Context) {
 
 	// Get devices to turn on
 	var turnOn []devicedao.DeviceDAO
-	on, err := devicedao.GetAll(devicedao.DeviceDAO{}, helpers.GreaterThan("priceLimit", data.Price)(helpers.NotIN("id", "SELECT deviceID FROM Schedules WHERE time = "+strconv.Itoa(int(timeStamp)))(database.DB)))
+	on, err := devicedao.GetAll(devicedao.DeviceDAO{}, helpers.GreaterThan("priceLimit", data.Price)(helpers.NotIN("id", scheduledDevices)(database.DB)))
 	if err == gorm.ErrRecordNotFound {
 		c.JSON(http.StatusNotFound, err.Error())
 		return

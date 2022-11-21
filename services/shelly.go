@@ -10,7 +10,9 @@ import (
 )
 
 type DeviceStatus struct {
+	Isok bool `json:"isok"`
 	Data struct {
+		Online bool `json:"online"`
 		Status struct {
 			Meters []struct {
 				Power null.Float `json:"power"`
@@ -22,7 +24,7 @@ type DeviceStatus struct {
 var myClient = &http.Client{Timeout: 10 * time.Second}
 
 func getJson(baseURL, deviceID, apiKey string, target interface{}) error {
-	r, err := http.PostForm(baseURL+"/device/relay/control", url.Values{
+	r, err := http.PostForm(baseURL+"/device/status", url.Values{
 		"auth_key": {apiKey},
 		"id":       {deviceID},
 	})

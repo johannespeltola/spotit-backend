@@ -30,8 +30,8 @@ func Null(column string) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func NotIN(column string, subQuery string) func(db *gorm.DB) *gorm.DB {
+func NotIN(column string, values interface{}) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		return db.Where(column+" NOT IN ?", subQuery)
+		return db.Where(column+" NOT IN ?", values)
 	}
 }
