@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"gin-boilerplate/dao/userdao"
-	"gin-boilerplate/infra/database"
-	"gin-boilerplate/middleware"
 	"net/http"
+	"spotit-backend/dao/userdao"
+	"spotit-backend/infra/database"
+	"spotit-backend/middleware"
 	"time"
 
 	"github.com/gin-gonic/gin"

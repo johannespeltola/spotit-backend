@@ -1,7 +1,7 @@
 package routers
 
 import (
-	"gin-boilerplate/middleware"
+	"spotit-backend/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"

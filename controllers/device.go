@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"gin-boilerplate/dao/devicedao"
-	"gin-boilerplate/infra/database"
 	"net/http"
+	"spotit-backend/dao/devicedao"
+	"spotit-backend/infra/database"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/guregu/null.v4"

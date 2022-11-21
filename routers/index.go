@@ -1,9 +1,9 @@
 package routers
 
 import (
-	"gin-boilerplate/controllers"
-	"gin-boilerplate/middleware"
 	"net/http"
+	"spotit-backend/controllers"
+	"spotit-backend/middleware"
 
 	"github.com/gin-gonic/gin"
 )

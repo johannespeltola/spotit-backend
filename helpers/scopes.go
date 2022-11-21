@@ -23,3 +23,9 @@ func GreaterThan(column string, value interface{}) func(db *gorm.DB) *gorm.DB {
 		return db.Where(column+"> ?", value)
 	}
 }
+
+func Null(column string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Where(column + " IS NULL")
+	}
+}

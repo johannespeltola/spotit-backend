@@ -1,7 +1,7 @@
 package config
 
 import (
-	"gin-boilerplate/infra/logger"
+	"spotit-backend/infra/logger"
 
 	"github.com/spf13/viper"
 )

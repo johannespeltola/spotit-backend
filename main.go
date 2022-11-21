@@ -1,10 +1,10 @@
 package main
 
 import (
-	"gin-boilerplate/config"
-	"gin-boilerplate/infra/database"
-	"gin-boilerplate/infra/logger"
-	"gin-boilerplate/routers"
+	"spotit-backend/config"
+	"spotit-backend/infra/database"
+	"spotit-backend/infra/logger"
+	"spotit-backend/routers"
 	"time"
 
 	"github.com/spf13/viper"
@@ -27,4 +27,5 @@ func main() {
 
 	router := routers.SetupRoute()
 	logger.Fatalf("%v", router.RunTLS(config.ServerConfig(), "/etc/letsencrypt/live/spotit.codebite.fi/fullchain.pem", "/etc/letsencrypt/live/spotit.codebite.fi/privkey.pem"))
+	// logger.Fatalf("%v", router.Run(config.ServerConfig()))
 }

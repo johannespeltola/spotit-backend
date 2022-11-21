@@ -1,4 +1,4 @@
-module gin-boilerplate
+module spotit-backend
 
 go 1.17
 

@@ -1,18 +1,22 @@
 package controllers
 
 import (
-	"gin-boilerplate/dao/devicedao"
-	"gin-boilerplate/helpers"
-	"gin-boilerplate/infra/database"
 	"net/http"
 	"net/url"
+	"spotit-backend/dao/devicedao"
+	"spotit-backend/dao/eventdao"
+	"spotit-backend/dao/priceeventdao"
+	"spotit-backend/helpers"
+	"spotit-backend/infra/database"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gopkg.in/guregu/null.v4"
 	"gorm.io/gorm"
 )
 
 type PriceRecordData struct {
-	Price     float32 `json:"price"`
+	Price     float64 `json:"price"`
 	TimeStamp string  `json:"timeStamp"`
 }
 
@@ -23,6 +27,24 @@ func AddPriceRecord(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	timeStamp, err := strconv.ParseInt(data.TimeStamp, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Create price event record if it does not exists
+	_, err = priceeventdao.GetOne(priceeventdao.PriveEventDAO{Time: null.IntFrom(timeStamp)}, database.GetDB())
+	if err != nil && err != gorm.ErrRecordNotFound {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if err == gorm.ErrRecordNotFound {
+		priceeventdao.Create(&priceeventdao.PriveEventDAO{Time: null.IntFrom(timeStamp), Price: null.FloatFrom(data.Price)}, database.GetDB())
+	}
+
+	// Get devices to turn off
 	turnOff, err := devicedao.GetAll(devicedao.DeviceDAO{}, helpers.LessThan("priceLimit", data.Price)(database.GetDB()))
 	if err == gorm.ErrRecordNotFound {
 		c.JSON(http.StatusNotFound, err.Error())
@@ -32,6 +54,8 @@ func AddPriceRecord(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	// Get devices to turn on
 	turnOn, err := devicedao.GetAll(devicedao.DeviceDAO{}, helpers.GreaterThan("priceLimit", data.Price)(database.GetDB()))
 	if err == gorm.ErrRecordNotFound {
 		c.JSON(http.StatusNotFound, err.Error())
@@ -41,6 +65,8 @@ func AddPriceRecord(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	// Update device statuses
 	var updated []string
 	for _, d := range *turnOff {
 		http.PostForm(d.BaseURL.String+"/device/relay/control", url.Values{
@@ -49,6 +75,15 @@ func AddPriceRecord(c *gin.Context) {
 			"turn":     {"off"},
 			"channel":  {"0"},
 		})
+		// Check for active off events
+		_, err := eventdao.GetOne(eventdao.EventDAO{DeviceID: d.ID}, helpers.Null("end")(database.GetDB()))
+		if err == gorm.ErrRecordNotFound {
+			_, err := eventdao.Create(eventdao.EventDAO{DeviceID: d.ID, Start: null.IntFrom(timeStamp)}, database.GetDB())
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
 		updated = append(updated, d.ID.String)
 	}
 	for _, d := range *turnOn {
@@ -58,6 +93,16 @@ func AddPriceRecord(c *gin.Context) {
 			"turn":     {"on"},
 			"channel":  {"0"},
 		})
+		// Check for active off events
+		event, err := eventdao.GetOne(eventdao.EventDAO{DeviceID: d.ID}, helpers.Null("end")(database.GetDB()))
+		if err == nil {
+			// Set end time
+			_, err := eventdao.Update(eventdao.EventDAO{ID: event.ID, End: null.IntFrom(timeStamp)}, database.GetDB())
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
 		updated = append(updated, d.ID.String)
 	}
 	c.JSON(http.StatusCreated, updated)
